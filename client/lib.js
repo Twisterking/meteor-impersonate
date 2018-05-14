@@ -26,7 +26,7 @@ Object.defineProperty(Impersonate, "do", {
       else {
         if(isUndo === false) {
           if(typeof Impersonate._byAdmin !== 'undefined') {
-            console.log(Impersonate._byAdmin, res);
+            // console.log(Impersonate._byAdmin, res);
             if(Impersonate._byAdmin !== res.byAdmin) {
               // adminStatus changed!
               alert('Due to security reasons, the page has to be reloaded first! Please wait ...');
