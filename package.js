@@ -1,7 +1,7 @@
 Package.describe({
   name: "twisterking:impersonate",
   summary: "Impersonate users in Meteor",
-  version: "0.3.1",
+  version: "0.3.2",
   git: "https://github.com/gwendall/meteor-impersonate.git",
 });
 
