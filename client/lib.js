@@ -29,7 +29,7 @@ Object.defineProperty(Impersonate, "do", {
             // console.log(Impersonate._byAdmin, res);
             if(Impersonate._byAdmin !== res.byAdmin) {
               // adminStatus changed!
-              alert('Due to security reasons, the page has to be reloaded first! Please wait ...');
+              alert('Aus Sicherheitsgründen muss die Seite neu geladen werden! Bitte warten ...');
               return location.reload();
             }
           } else {
@@ -71,7 +71,7 @@ Object.defineProperty(Impersonate, "undo", {
 });
 
 // Reset data on logout
-Meteor.autorun(function() {
+Tracker.autorun(function() {
   if (Meteor.userId()) return;
   Impersonate._active.set(false);
   Impersonate._user = null;

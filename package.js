@@ -9,7 +9,8 @@ Package.onUse(function (api, where) {
 
   api.use([
     "accounts-base@1.2.2",
-    "reactive-var@1.0.6"
+    "reactive-var@1.0.6",
+    "tracker"
   ], "client");
 
   api.use([
