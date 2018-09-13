@@ -59,7 +59,7 @@ Object.defineProperty(Impersonate, "byStandard", {
   value: function() {
     var active = Impersonate._active.get();
     if(active === true && Impersonate._byAdmin === true) return false;
-    if(active === true && !Impersonate._byAdmin) return true;
+    if(active === true && !Impersonate._byAdmin) return Impersonate._user;
     if(!active) return false;
     return true;
   }

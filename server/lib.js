@@ -1,4 +1,3 @@
-
 var defaultAuthCheck = function(fromUser, toUser) {
 
   var roleAllow = false;
@@ -25,23 +24,52 @@ var defaultAuthCheck = function(fromUser, toUser) {
 
 Impersonate = {
   admins: ["admin"],
-  adminGroups:[], // { role: "admin", group: "organization" }
+  adminGroups:[],
   checkAuth: defaultAuthCheck,
   beforeSwitchUser: function() {},
   afterSwitchUser: function() {},
 };
 
-//defaultAuthCheck
+// Object.defineProperty(Impersonate, "isActive", {
+//   configurable: false,
+//   writable: false,
+//   enumerable: false,
+//   value: function() {
+//     return Impersonate._active;
+//   }
+// });
+// Object.defineProperty(Impersonate, "byAdmin", {
+//   configurable: false,
+//   writable: false,
+//   enumerable: false,
+//   value: function() {
+//     var active = Impersonate._active;
+//     if(active === true && Impersonate._byAdmin === true) return true;
+//     return false;
+//   }
+// });
+// Object.defineProperty(Impersonate, "byStandard", {
+//   configurable: false,
+//   writable: false,
+//   enumerable: false,
+//   value: function() {
+//     var active = Impersonate._active;
+//     if(active === true && Impersonate._byAdmin === true) return false;
+//     if(active === true && !Impersonate._byAdmin) return true;
+//     if(!active) return false;
+//     return true;
+//   }
+// });
 
 Meteor.methods({
   impersonate: function(params) {
 
     var currentUser = this.userId;
+    var byAdmin = Roles.userIsInRole(currentUser, 'admin');
 
     check(currentUser, String);
     check(params, Object);
     check(params.toUser, String);
-
 
     // These props are set on every call except the first call.
 
@@ -53,7 +81,6 @@ Meteor.methods({
     if (!Meteor.users.findOne({ _id: params.toUser })) {
       throw new Meteor.Error(404, "User not found. Can't impersonate it.");
     }
-
 
     if (params.token) {
 
@@ -91,10 +118,18 @@ Meteor.methods({
     // Switch user
     this.setUserId(params.toUser);
 
+    // if(params.fromUser == params.toUser) Impersonate._active = false;
+    // else Impersonate._active = true;    
+    // if(byAdmin) Impersonate._byAdmin = true;
+    // else Impersonate._byAdmin = false;
+
     // Post action hook
     Impersonate.afterSwitchUser.call(this, fromUser, params.toUser);
 
-    return { fromUser: currentUser, toUser: params.toUser, token: params.token, byAdmin: Roles.userIsInRole(currentUser, 'admin') };
+    // Impersonate.fromUser = currentUser;
+    // Impersonate.toUser = params.toUser;
+
+    return { fromUser: currentUser, toUser: params.toUser, token: params.token, byAdmin };
 
   }
 });
