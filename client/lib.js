@@ -25,13 +25,45 @@ Object.defineProperty(Impersonate, "allowChange", {
   }
 });
 
-Impersonate._active = new SafeReactiveVar(false, Impersonate.allowChange);
+Object.defineProperty(Impersonate, "_active", {
+  configurable: false,
+  writable: false,
+  enumerable: false,
+  value: new SafeReactiveVar(false, Impersonate.allowChange)
+});
 
-// Object.freeze(Impersonate._active);
+Object.defineProperty(Impersonate, "isActive", {
+  configurable: false,
+  writable: false,
+  enumerable: false,
+  value: function() {
+    return Impersonate._active.get();
+  }
+});
 
-Impersonate.isActive = function(){
-  return Impersonate._active.get();
-};
+Object.defineProperty(Impersonate, "byAdmin", {
+  configurable: false,
+  writable: false,
+  enumerable: false,
+  value: function() {
+    var active = Impersonate._active.get();
+    if(active === true && Impersonate._byAdmin === true) return true;
+    return false;
+  }
+});
+
+Object.defineProperty(Impersonate, "byStandard", {
+  configurable: false,
+  writable: false,
+  enumerable: false,
+  value: function() {
+    var active = Impersonate._active.get();
+    if(active === true && Impersonate._byAdmin === true) return false;
+    if(active === true && !Impersonate._byAdmin) return true;
+    if(!active) return false;
+    return true;
+  }
+});
 
 Object.defineProperty(Impersonate, "do", {
   configurable: false,
@@ -52,7 +84,6 @@ Object.defineProperty(Impersonate, "do", {
         if(isUndo === false) {
           if(typeof Impersonate._byAdmin !== 'undefined') {
             if(Impersonate._byAdmin !== res.byAdmin) {
-              // adminStatus changed!
               alert('Aus Sicherheitsgründen muss die Seite neu geladen werden! Bitte warten ...');
               return location.reload();
             }
@@ -64,7 +95,7 @@ Object.defineProperty(Impersonate, "do", {
           }
         }
         if (!Impersonate._user) {
-          Impersonate._user = res.fromUser; // First impersonation
+          Impersonate._user = res.fromUser;
           Impersonate._token = res.token;
         }
         Cookies.set(__xAZLkB47, __Uk6tCe73, { expiresMinutes: 5 });
