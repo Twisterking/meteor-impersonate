@@ -1,71 +1,21 @@
-var defaultAuthCheck = function(fromUser, toUser) {
-
-  var roleAllow = false;
-  // if there is any role, use that
-  if (Impersonate.admins && Impersonate.admins.length) {
-    roleAllow = Roles.userIsInRole(fromUser, Impersonate.admins);
-  }
-
-  if (Impersonate.adminGroups && !roleAllow) {
-    // check for permissions using roles and groups
-    for (var i = 0; i< Impersonate.adminGroups.length; i++ ) {
-      var roleGroup = Impersonate.adminGroups[i];
-      roleAllow = Roles.userIsInRole(fromUser, roleGroup.role, roleGroup.group);
-      if (roleAllow) break; // found an allowable role, no need to check further, proceed
-    }
-  }
-
-  if (!roleAllow) {
-    throw new Meteor.Error(403, "Permission denied. You need to be an admin to impersonate users.");
-  }
-
+const defaultAuthCheck = function(fromUser, toUser) {
+  // defaultAuthCheck
+  if(fromUserId == toUserId) return true;
+  if(Roles.userIsInRole(fromUserId, 'admin')) return true;
+  throw new Meteor.Error(403, "You are not allowed to impersonate users!");
 };
-
 
 Impersonate = {
-  admins: ["admin"],
-  adminGroups:[],
-  checkAuth: defaultAuthCheck,
+  checkAuth: defaultAuthCheck, // not really used - check server fixtures
   beforeSwitchUser: function() {},
-  afterSwitchUser: function() {},
+  afterSwitchUser: function() {}
 };
 
-// Object.defineProperty(Impersonate, "isActive", {
-//   configurable: false,
-//   writable: false,
-//   enumerable: false,
-//   value: function() {
-//     return Impersonate._active;
-//   }
-// });
-// Object.defineProperty(Impersonate, "byAdmin", {
-//   configurable: false,
-//   writable: false,
-//   enumerable: false,
-//   value: function() {
-//     var active = Impersonate._active;
-//     if(active === true && Impersonate._byAdmin === true) return true;
-//     return false;
-//   }
-// });
-// Object.defineProperty(Impersonate, "byStandard", {
-//   configurable: false,
-//   writable: false,
-//   enumerable: false,
-//   value: function() {
-//     var active = Impersonate._active;
-//     if(active === true && Impersonate._byAdmin === true) return false;
-//     if(active === true && !Impersonate._byAdmin) return true;
-//     if(!active) return false;
-//     return true;
-//   }
-// });
-
 Meteor.methods({
-  impersonate: function(params) {
-
-    var currentUser = this.userId;
-    var byAdmin = Roles.userIsInRole(currentUser, 'admin');
+  impersonate(params) {
+    let fromUser, toUser;
+    const currentUser = this.userId;
+    const byAdmin = Roles.userIsInRole(currentUser, 'admin');
 
     check(currentUser, String);
     check(params, Object);
@@ -87,10 +37,10 @@ Meteor.methods({
       // Impersonating with a token
       // params.fromUser is always the "original" user.
       // When we call Impersonate.undo then toUser is the original user too.
-      var fromUser = params.fromUser;
+      fromUser = params.fromUser;
 
       // check the token is valid.
-      var user = Meteor.users.findOne({ _id: fromUser }) || {};
+      let user = Meteor.users.findOne({ _id: fromUser }) || {};
       if (params.token != Meteor._get(user, "services", "resume", "loginTokens", 0, "hashedToken")) {
         throw new Meteor.Error(403, "Permission denied. Can't impersonate with this token.");
       }
@@ -100,9 +50,9 @@ Meteor.methods({
       // Impersonating with no token
       // This is the first call to Impersonate in this user's browser session
       // This user will be the "fromUser" from now on.
-      var fromUser = currentUser;
+      fromUser = currentUser;
 
-      var user = Meteor.users.findOne({ _id: fromUser }) || {};
+      let user = Meteor.users.findOne({ _id: fromUser }) || {};
       params.token = Meteor._get(user, "services", "resume", "loginTokens", 0, "hashedToken");
     }
 
@@ -118,16 +68,8 @@ Meteor.methods({
     // Switch user
     this.setUserId(params.toUser);
 
-    // if(params.fromUser == params.toUser) Impersonate._active = false;
-    // else Impersonate._active = true;    
-    // if(byAdmin) Impersonate._byAdmin = true;
-    // else Impersonate._byAdmin = false;
-
     // Post action hook
     Impersonate.afterSwitchUser.call(this, fromUser, params.toUser);
-
-    // Impersonate.fromUser = currentUser;
-    // Impersonate.toUser = params.toUser;
 
     return { fromUser: currentUser, toUser: params.toUser, token: params.token, byAdmin };
 

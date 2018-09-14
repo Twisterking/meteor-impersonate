@@ -77,7 +77,7 @@ Object.defineProperty(Impersonate, "do", {
     }
     Meteor.call("impersonate", params, function(err, res) {
       if (err) {
-        console.log("Could not impersonate.", err);
+        console.error("Could not impersonate!", err);
         if (!!(cb && cb.constructor && cb.apply)) cb.apply(this, [err, res]);
       }
       else {
