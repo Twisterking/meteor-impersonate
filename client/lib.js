@@ -41,28 +41,24 @@ Object.defineProperty(Impersonate, "isActive", {
   }
 });
 
-Object.defineProperty(Impersonate, "byAdmin", {
-  configurable: false,
-  writable: false,
-  enumerable: false,
-  value: function() {
-    var active = Impersonate._active.get();
-    if(active === true && Impersonate._byAdmin === true) return true;
-    return false;
-  }
-});
-
-Object.defineProperty(Impersonate, "byStandard", {
-  configurable: false,
-  writable: false,
-  enumerable: false,
-  value: function() {
-    var active = Impersonate._active.get();
-    if(active === true && Impersonate._byAdmin === true) return false;
-    if(active === true && !Impersonate._byAdmin) return Impersonate._user;
-    if(!active) return false;
-    return true;
-  }
+var lockedKeys = ['byAdmin', 'bySupplier', 'byBuyerAdmin'];
+lockedKeys.forEach(function(key) {
+  Object.defineProperty(Impersonate, key, {
+    configurable: false,
+    writable: false,
+    enumerable: false,
+    value: function() {
+      var active = Impersonate._active.get();
+      if(key == 'byAdmin') {
+        if(active === true && Impersonate._byAdmin === true) return true;
+        return false;
+      } else {
+        if(active === true && Impersonate._byAdmin === true) return false;
+        if(active === true && !Impersonate._byAdmin && Impersonate['_' + key]) return Impersonate._user;
+        return false;
+      }
+    }
+  });
 });
 
 Object.defineProperty(Impersonate, "do", {
@@ -82,17 +78,19 @@ Object.defineProperty(Impersonate, "do", {
       }
       else {
         if(isUndo === false) {
-          if(typeof Impersonate._byAdmin !== 'undefined') {
-            if(Impersonate._byAdmin !== res.byAdmin) {
-              alert('Aus Sicherheitsgründen muss die Seite neu geladen werden! Bitte warten ...');
-              return location.reload();
+          lockedKeys.forEach(function(key) {
+            if(typeof Impersonate['_' + key] !== 'undefined') {
+              if(Impersonate['_' + key] !== res[key]) {
+                alert('Aus Sicherheitsgründen muss die Seite neu geladen werden! Bitte warten ...');
+                return location.reload();
+              }
+            } else {
+              Object.defineProperty(Impersonate, ('_' + key), {
+                writable: false,
+                value: res[key]
+              });
             }
-          } else {
-            Object.defineProperty(Impersonate, "_byAdmin", {
-              writable: false,
-              value: res.byAdmin
-            });
-          }
+          });
         }
         if (!Impersonate._user) {
           Impersonate._user = res.fromUser;
