@@ -41,7 +41,7 @@ Object.defineProperty(Impersonate, "isActive", {
   }
 });
 
-var lockedKeys = ['byAdmin', 'bySupplier', 'byBuyerAdmin'];
+var lockedKeys = ['byAdmin', 'bySupplier', 'byBuyerAdmin', 'byStandard'];
 lockedKeys.forEach(function(key) {
   Object.defineProperty(Impersonate, key, {
     configurable: false,
@@ -52,7 +52,14 @@ lockedKeys.forEach(function(key) {
       if(key == 'byAdmin') {
         if(active === true && Impersonate._byAdmin === true) return true;
         return false;
-      } else {
+      } 
+      else if(key == 'byStandard') {
+        if(active === true && Impersonate._byAdmin === true) return false;
+        if(active === true && !Impersonate._byAdmin) return Impersonate._user;
+        if(!active) return false;
+        return true;
+      }
+      else {
         if(active === true && Impersonate._byAdmin === true) return false;
         if(active === true && !Impersonate._byAdmin && Impersonate['_' + key]) return Impersonate._user;
         return false;
