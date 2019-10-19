@@ -16,7 +16,7 @@ Meteor.methods({
     let fromUser, toUser;
     const currentUser = this.userId;
     const byAdmin = Roles.userIsInRole(currentUser, 'admin');
-    const byBuyerAdmin = Roles.userIsInRole(currentUser, 'buyer-admin');
+    const byOlProfessional = Roles.userIsInRole(currentUser, 'olprofessional');
     const bySupplier = Roles.userIsInRole(currentUser, 'supplier');
 
     check(currentUser, String);
@@ -73,7 +73,7 @@ Meteor.methods({
     // Post action hook
     Impersonate.afterSwitchUser.call(this, fromUser, params.toUser);
 
-    return { fromUser: currentUser, toUser: params.toUser, token: params.token, byAdmin, byBuyerAdmin, bySupplier };
+    return { fromUser: currentUser, toUser: params.toUser, token: params.token, byAdmin, byOlProfessional, bySupplier };
 
   }
 });
