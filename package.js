@@ -5,8 +5,7 @@ Package.describe({
   git: "https://github.com/gwendall/meteor-impersonate.git",
 });
 
-Package.onUse(function (api, where) {
-
+Package.onUse(function (api) {
   api.use([
     "accounts-base@1.2.2",
     "reactive-var@1.0.6",
@@ -29,5 +28,4 @@ Package.onUse(function (api, where) {
   ], "client");
 
   api.export("Impersonate");
-
 });
