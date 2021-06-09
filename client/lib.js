@@ -1,11 +1,14 @@
-const Impersonate = {
+import { Meteor } from 'meteor/meteor';
+import Cookies from './js-cookie';
+
+export const Impersonate = {
   _user: null,
   _token: null
 };
 
 const randString = function() {
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-}
+};
 
 const __xAZLkB47 = randString();
 const __Uk6tCe73 = randString();
@@ -16,11 +19,11 @@ Object.defineProperty(Impersonate, "allowChange", {
   enumerable: false,
   value(a, b, c) {
     const fc = Cookies.get(__xAZLkB47);
-    if(!fc) return location.href = '/';
-    if(b == false) {
-      if(fc == c) return true;
+    if (!fc) return location.href = '/';
+    if (b === false) {
+      if (fc === c) return true;
       return false;
-    } 
+    }
     return true;
   }
 });
@@ -41,8 +44,8 @@ Object.defineProperty(Impersonate, "isActive", {
   }
 });
 
-var lockedKeys = ['byAdmin', 'bySupplier', 'byOlProfessional', 'byStandard'];
-lockedKeys.forEach(function(key) {
+const lockedKeys = ['byAdmin', 'bySupplier', 'byOlProfessional', 'byStandard'];
+lockedKeys.forEach((key) => {
   Object.defineProperty(Impersonate, key, {
     configurable: false,
     writable: false,
@@ -66,7 +69,7 @@ lockedKeys.forEach(function(key) {
   });
 });
 
-Object.defineProperty(Impersonate, "do", {
+Object.defineProperty(Impersonate, 'do', {
   configurable: false,
   writable: false,
   enumerable: false,
@@ -135,5 +138,3 @@ Tracker.autorun(() => {
   Impersonate._user = null;
   Impersonate._token = null;
 });
-
-module.exports = Impersonate;
