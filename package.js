@@ -7,8 +7,6 @@ Package.describe({
 
 Package.onUse(function (api) {
   api.use([
-    'ecmascript',
-    'modules',
     'accounts-base@1.2.2',
     'reactive-var@1.0.6',
     'meteor-safereactivevar',
@@ -16,6 +14,8 @@ Package.onUse(function (api) {
   ], 'client');
 
   api.use([
+    'ecmascript',
+    'modules',
     'random@1.0.5',
     'alanning:roles@1.2.14'
   ]);

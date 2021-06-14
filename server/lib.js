@@ -5,7 +5,7 @@ const defaultAuthCheck = function(fromUser, toUser) {
   throw new Meteor.Error(403, "You are not allowed to impersonate users!");
 };
 
-Impersonate = {
+export const Impersonate = {
   checkAuth: defaultAuthCheck, // not really used - check server fixtures
   beforeSwitchUser: function() {},
   afterSwitchUser: function() {}
