@@ -1,22 +1,22 @@
 Package.describe({
   name: "twisterking:impersonate",
   summary: "Impersonate users in Meteor",
-  version: "0.3.7",
+  version: "0.3.8",
   git: "https://github.com/gwendall/meteor-impersonate.git",
 });
 
 Package.onUse(function (api, where) {
 
   api.use([
-    "accounts-base@1.2.2",
-    "reactive-var@1.0.6",
+    "accounts-base",
+    "reactive-var",
     "meteor-safereactivevar",
     "tracker"
   ], "client");
 
   api.use([
-    "random@1.0.5",
-    "alanning:roles@1.2.14",
+    "random",
+    "alanning:roles",
   ]);
 
   api.addFiles([
