@@ -15,7 +15,7 @@ Meteor.methods({
   impersonate(params) {
     let fromUser, toUser;
     const currentUser = this.userId;
-    const byAdmin = Roles.userIsInRole(currentUser, ['admin', 'admin-fr']);
+    const byAdmin = Roles.userIsInRole(currentUser, ['admin', 'admin-fr', 'admin-it', 'admin-es']);
     const byOlProfessional = Roles.userIsInRole(currentUser, 'olprofessional');
     const bySupplier = Roles.userIsInRole(currentUser, 'supplier');
 
