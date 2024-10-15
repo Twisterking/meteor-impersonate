@@ -1,7 +1,7 @@
-const defaultAuthCheck = function(fromUser, toUser) {
+const defaultAuthCheck = async function(fromUser, toUser) {
   // defaultAuthCheck
   if(fromUserId == toUserId) return true;
-  if(Roles.userIsInRole(fromUserId, 'admin')) return true;
+  if(await Roles.userIsInRoleAsync(fromUserId, 'admin')) return true;
   throw new Meteor.Error(403, "You are not allowed to impersonate users!");
 };
 
@@ -12,12 +12,12 @@ Impersonate = {
 };
 
 Meteor.methods({
-  impersonate(params) {
+  async impersonate(params) {
     let fromUser, toUser;
     const currentUser = this.userId;
-    const byAdmin = Roles.userIsInRole(currentUser, ['admin', 'admin-fr', 'admin-it', 'admin-es']);
-    const byOlProfessional = Roles.userIsInRole(currentUser, 'olprofessional');
-    const bySupplier = Roles.userIsInRole(currentUser, 'supplier');
+    const byAdmin = await Roles.userIsInRoleAsync(currentUser, ['admin', 'admin-fr', 'admin-it', 'admin-es']);
+    const byOlProfessional = await Roles.userIsInRoleAsync(currentUser, 'olprofessional');
+    const bySupplier = await Roles.userIsInRoleAsync(currentUser, 'supplier');
 
     check(currentUser, String);
     check(params, Object);
@@ -62,16 +62,16 @@ Meteor.methods({
     // With the default auth method it's technically only necessary
     // to run this check on the first call but with other auth methods
     // that check the toUser as well you'll need to check every time.
-    Impersonate.checkAuth.call(this, fromUser, params.toUser);
+    await Impersonate.checkAuth.call(this, fromUser, params.toUser);
 
     // Pre action hook
-    Impersonate.beforeSwitchUser.call(this, fromUser, params.toUser);
+    await Impersonate.beforeSwitchUser.call(this, fromUser, params.toUser);
 
     // Switch user
     this.setUserId(params.toUser);
 
     // Post action hook
-    Impersonate.afterSwitchUser.call(this, fromUser, params.toUser);
+    await Impersonate.afterSwitchUser.call(this, fromUser, params.toUser);
 
     return { fromUser: currentUser, toUser: params.toUser, token: params.token, byAdmin, byOlProfessional, bySupplier };
 

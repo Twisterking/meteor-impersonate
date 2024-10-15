@@ -78,38 +78,39 @@ Object.defineProperty(Impersonate, "do", {
       params.fromUser = Impersonate._user;
       params.token = Impersonate._token;
     }
-    Meteor.call("impersonate", params, function(err, res) {
-      if (err) {
-        console.error("Could not impersonate!", err);
-        if (!!(cb && cb.constructor && cb.apply)) cb.apply(this, [err, res]);
-      }
-      else {
-        if(isUndo === false) {
-          lockedKeys.forEach(function(key) {
-            if(typeof Impersonate['_' + key] !== 'undefined') {
-              if(Impersonate['_' + key] !== res[key]) {
-                alert('Aus Sicherheitsgründen muss die Seite neu geladen werden! Bitte warten ...');
-                return location.reload();
+    Meteor.callAsync("impersonate", params)
+      .then((res, err) => {
+        if (err) {
+          console.error("Could not impersonate!", err);
+          if (!!(cb && cb.constructor && cb.apply)) cb.apply(this, [err, res]);
+        }
+        else {
+          if(isUndo === false) {
+            lockedKeys.forEach(function(key) {
+              if(typeof Impersonate['_' + key] !== 'undefined') {
+                if(Impersonate['_' + key] !== res[key]) {
+                  alert('Aus Sicherheitsgründen muss die Seite neu geladen werden! Bitte warten ...');
+                  return location.reload();
+                }
+              } else {
+                Object.defineProperty(Impersonate, ('_' + key), {
+                  writable: false,
+                  value: res[key]
+                });
               }
-            } else {
-              Object.defineProperty(Impersonate, ('_' + key), {
-                writable: false,
-                value: res[key]
-              });
-            }
-          });
-        }
-        if (!Impersonate._user) {
-          Impersonate._user = res.fromUser;
-          Impersonate._token = res.token;
-        }
-        Cookies.set(__xAZLkB47, __Uk6tCe73, { expiresMinutes: 5 });
+            });
+          }
+          if (!Impersonate._user) {
+            Impersonate._user = res.fromUser;
+            Impersonate._token = res.token;
+          }
+          Cookies.set(__xAZLkB47, __Uk6tCe73, { expiresMinutes: 5 });
 
-        Impersonate._active.set(true, __Uk6tCe73);
-        Meteor.connection.setUserId(res.toUser);
-        if (!!(cb && cb.constructor && cb.apply)) cb.apply(this, [err, res.toUser]);
-      }
-    });
+          Impersonate._active.set(true, __Uk6tCe73);
+          Meteor.connection.setUserId(res.toUser);
+          if (!!(cb && cb.constructor && cb.apply)) cb.apply(this, [err, res.toUser]);
+        }
+      });
   }
 });
 
