@@ -30,7 +30,7 @@ Meteor.methods({
       check(params.token, String);
     }
 
-    if (!Meteor.users.findOneAsync({ _id: params.toUser })) {
+    if (!await Meteor.users.findOneAsync({ _id: params.toUser })) {
       throw new Meteor.Error(404, "User not found. Can't impersonate it.");
     }
 
@@ -42,7 +42,7 @@ Meteor.methods({
       fromUser = params.fromUser;
 
       // check the token is valid.
-      let user = Meteor.users.findOneAsync({ _id: fromUser }) || {};
+      let user = await Meteor.users.findOneAsync({ _id: fromUser }) || {};
       if (params.token != Meteor._get(user, "services", "resume", "loginTokens", 0, "hashedToken")) {
         throw new Meteor.Error(403, "Permission denied. Can't impersonate with this token.");
       }
@@ -54,7 +54,7 @@ Meteor.methods({
       // This user will be the "fromUser" from now on.
       fromUser = currentUser;
 
-      let user = Meteor.users.findOneAsync({ _id: fromUser }) || {};
+      let user = await Meteor.users.findOneAsync({ _id: fromUser }) || {};
       params.token = Meteor._get(user, "services", "resume", "loginTokens", 0, "hashedToken");
     }
 
@@ -68,7 +68,7 @@ Meteor.methods({
     await Impersonate.beforeSwitchUser.call(this, fromUser, params.toUser);
 
     // Switch user
-    this.setUserId(params.toUser);
+    await this.setUserId(params.toUser);
 
     // Post action hook
     await Impersonate.afterSwitchUser.call(this, fromUser, params.toUser);
