@@ -1,9 +1,9 @@
 Impersonate = {
-  _user: null, 
+  _user: null,
   _token: null,
 };
 
-var randString = function() {
+var randString = function () {
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
 
@@ -14,13 +14,13 @@ Object.defineProperty(Impersonate, "allowChange", {
   configurable: false,
   writable: false,
   enumerable: false,
-  value: function(a, b, c) {
+  value: function (a, b, c) {
     var fc = Cookies.get(__xAZLkB47);
-    if(!fc) return location.href = '/';
-    if(b == false) {
-      if(fc == c) return true;
+    if (!fc) return location.href = '/';
+    if (b == false) {
+      if (fc == c) return true;
       return false;
-    } 
+    }
     return true;
   }
 });
@@ -36,32 +36,32 @@ Object.defineProperty(Impersonate, "isActive", {
   configurable: false,
   writable: false,
   enumerable: false,
-  value: function() {
+  value: function () {
     return Impersonate._active.get();
   }
 });
 
 var lockedKeys = ['byAdmin', 'bySupplier', 'byOlProfessional', 'byStandard'];
-lockedKeys.forEach(function(key) {
+lockedKeys.forEach(function (key) {
   Object.defineProperty(Impersonate, key, {
     configurable: false,
     writable: false,
     enumerable: false,
-    value: function() {
+    value: function () {
       var active = Impersonate._active.get();
-      if(key == 'byAdmin') {
-        if(active === true && Impersonate._byAdmin === true) return true;
+      if (key == 'byAdmin') {
+        if (active === true && Impersonate._byAdmin === true) return true;
         return false;
-      } 
-      else if(key == 'byStandard') {
-        if(active === true && Impersonate._byAdmin === true) return false;
-        if(active === true && !Impersonate._byAdmin) return Impersonate._user;
-        if(!active) return false;
+      }
+      else if (key == 'byStandard') {
+        if (active === true && Impersonate._byAdmin === true) return false;
+        if (active === true && !Impersonate._byAdmin) return Impersonate._user;
+        if (!active) return false;
         return true;
       }
       else {
-        if(active === true && Impersonate._byAdmin === true) return false;
-        if(active === true && !Impersonate._byAdmin && Impersonate['_' + key]) return Impersonate._user;
+        if (active === true && Impersonate._byAdmin === true) return false;
+        if (active === true && !Impersonate._byAdmin && Impersonate['_' + key]) return Impersonate._user;
         return false;
       }
     }
@@ -72,7 +72,7 @@ Object.defineProperty(Impersonate, "do", {
   configurable: false,
   writable: false,
   enumerable: false,
-  value: function(toUser, isUndo, cb) {
+  value: function (toUser, isUndo, cb) {
     var params = { toUser: toUser };
     if (Impersonate._user) {
       params.fromUser = Impersonate._user;
@@ -85,11 +85,11 @@ Object.defineProperty(Impersonate, "do", {
           if (!!(cb && cb.constructor && cb.apply)) cb.apply(this, [err, res]);
         }
         else {
-          if(isUndo === false) {
-            lockedKeys.forEach(function(key) {
-              if(typeof Impersonate['_' + key] !== 'undefined') {
-                if(Impersonate['_' + key] !== res[key]) {
-                  alert('Aus Sicherheitsgründen muss die Seite neu geladen werden! Bitte warten ...');
+          if (isUndo === false) {
+            lockedKeys.forEach(function (key) {
+              if (typeof Impersonate['_' + key] !== 'undefined') {
+                if (Impersonate['_' + key] !== res[key]) {
+                  alert('For security reasons, this page needs to be reloaded ...');
                   return location.reload();
                 }
               } else {
@@ -118,21 +118,25 @@ Object.defineProperty(Impersonate, "undo", {
   configurable: false,
   writable: false,
   enumerable: false,
-  value: function(cb) {
-    Impersonate.do(Impersonate._user, true, function(err, res) {
+  value: function (cb) {
+    Impersonate.do(Impersonate._user, true, function (err, res) {
       if (err) {
         if (!!(cb && cb.constructor && cb.apply)) cb.apply(this, [err, res]);
       }
       else {
         Impersonate._active.set(false, __Uk6tCe73);
-        if (!!(cb && cb.constructor && cb.apply)) cb.apply(this, [err, res.toUser]);
+        // we need this timeout, because the this.setUserId() on the server needs some time to "propagate" the new userId on the server. 
+        // without this timeout, some role checks fail immediately after the userId change!
+        setTimeout(() => {
+          if (!!(cb && cb.constructor && cb.apply)) cb.apply(this, [err, res.toUser]);
+        }, 300);
       }
     });
   }
 });
 
 // Reset data on logout
-Tracker.autorun(function() {
+Tracker.autorun(function () {
   if (Meteor.userId()) return;
   Impersonate._active.set(false, __Uk6tCe73);
   Impersonate._user = null;
